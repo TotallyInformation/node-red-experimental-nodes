@@ -69,7 +69,13 @@ const release = '1.0.0'
  *  - In packfe, set the source version string to the current package.json version
  */
 
- const readline = require('readline')
+// Path for Editor html source code
+// Don't use path.join here because this is used for globs and they don't use Windows paths
+const nodeSrcRoot = 'src/nodes-html'
+// Path for nodes
+const nodesRoot = 'nodes'
+
+const readline = require('readline')
 /** Create a new node from the template */
 function createNewNode(cb) {
     const rl = readline.createInterface({
@@ -77,7 +83,7 @@ function createNewNode(cb) {
         output: process.stdout
     })
     rl.question('Enter the name of the new node to create: ', async function (nodeName) {
-        console.log(`New node will be called '${nodeName}'`)
+        console.log(`\nNew node will be called '${nodeName}'`)
         try {
             fs.copy('new-node-template/nodes/node-name', `nodes/${nodeName}`)
             console.log(`Template runtime copied to 'nodes/${nodeName}'`)
@@ -90,62 +96,57 @@ function createNewNode(cb) {
         } catch (e) {
             cb(e)
         }
+        
         rl.close()
-        // fs.copy('new-node-template/nodes/node-name', `nodes/${nodeName}`, err => {
-        //     if (err) return cb(err)
-        //     console.log(`Template runtime copied to 'nodes/${nodeName}'`)
-        //     rl.close()
-        // })
     })
     rl.on('close', function () {
-        console.log('\nNew node created.')
+        console.log('New node created.\n')
+        // setName(cb)
         cb()
     })
 }
 
-/** Combine the parts of uibuilder.html */
-function buildPanelUib1(cb) {
-    src('src/editor/uibuilder/editor.js')
-        // .pipe(debug({title:'1', minimal:true}))
-        // .pipe(once())
-        // .pipe(debug({title:'2', minimal:true}))
+function setName(cb) {
+    src([`${nodeSrcRoot}/*/editor.js`, `${nodeSrcRoot}/*/template.html`, `${nodeSrcRoot}/*/help.html`, `${nodeSrcRoot}/*/main.html`, `${nodesRoot}/*/customNode.js`],  )
+        // .pipe(debug({title:'setname',minimal:false}))
+        // Replace any instances of '¬¬¬' with actual node name (assumed to be the parent folder name)
+        .pipe( gulpReplace('¬¬¬', function replaceNodeNamePlaceholder(match, p1, offset, string) {
+            // https://github.com/gulpjs/vinyl#instance-properties
+            const nodeName = this.file.relative.split(path.sep).shift()
+            // if (match) console.log( 'gulpReplace: ', this.file.relative )
+            return nodeName
+        }) )
+        .pipe(dest(nodeSrcRoot))
+        // .pipe(debug({title:'setname2',minimal:false}))
+
+    cb()
+}
+
+/** Uglify js (do before build, change main.html to include min.js instead of .js) */
+function uglifyJs(cb) {
+    src(`${nodeSrcRoot}/*/main.html`)
         .pipe(uglify())
         .pipe(rename('editor.min.js'))
-        .pipe(dest('src/editor/uibuilder'))
-
-    cb()
-}
-/** compress */
-function buildPanelUib2(cb) {
-    
-    src('src/editor/uibuilder/main.html')
-        .pipe(include())
-        //.pipe(once())
-        .pipe(rename('uibuilder.html'))
-        .pipe(htmlmin({ collapseWhitespace: true, removeComments: true, processScripts: ['text/html'], removeScriptTypeAttributes: true }))
-        .pipe(dest(nodeDest))
+        .pipe(dest(nodeSrcRoot))
 
     cb()
 }
 
-// Path for Editor html source code
-// Don't use path.join here because this is used for globs and they don't use Windows paths
-const nodeSrcRoot = 'src/nodes-html'
 
-function buildMe(cb,b) {
-    // We only want these files to be processed in any of the folders
-    src([`${nodeSrcRoot}/*/editor.js`, `${nodeSrcRoot}/*/panel.html`, `${nodeSrcRoot}/*/help.html`, `${nodeSrcRoot}/*/main.html`], { since: lastRun(buildMe) } )
-        .pipe(debug({title:'debug1',minimal:false}))
-        // Replace any instances of '¬¬¬' with actual node name (assumed to be the parent folder name)
-        .pipe( gulpReplace('¬¬¬', function replaceNodeNamePlaceholder() {
-            // https://github.com/gulpjs/vinyl#instance-properties
-            const splitFolder = this.file.relative.split(path.sep).shift()
-            console.log('replaceNodeNamePlaceholder', splitFolder)
-            return splitFolder
-        }) )
-        // .pipe( include({'extensions':['js','html']}) )
+function buildMe(cb) {
+    src(`${nodeSrcRoot}/*/main.html`, ) // { since: lastRun(buildMe) } )
+        // .pipe(debug({title:'debug1',minimal:false}))
+        .pipe( include() )
+        // Rename output to $dirname/editor.html
+        .pipe(rename(function(thispath) {
+            // thispath.dirname = `${thispath.dirname}`
+            thispath.basename = 'customNode'
+            //thispath.extname = 'html'
+        }))
+        // Minimise HTML output
+        // .pipe(htmlmin({ collapseWhitespace: true, removeComments: true, processScripts: ['text/html'], removeScriptTypeAttributes: true }))
+        .pipe(dest('nodes/'))
 
-    console.log('buildMe', cb, b)
     cb()
 }
 
@@ -221,10 +222,12 @@ async function createTag(cb) {
     cb()
 }
 
-// exports.default     = series( buildme ) // series(runLinter,parallel(generateCSS,generateHTML),runTests)
-exports.watch       = watchme
-exports.new       = createNewNode
-exports.buildPanelUib = series(buildPanelUib1, buildPanelUib2)
-// exports.build       = buildme
+exports.default   = series( buildMe ) // series(runLinter,parallel(generateCSS,generateHTML),runTests)
+exports.build     = series(buildMe )
+exports.watch     = watchme
+
+exports.new       = series( createNewNode, setName, setName )  // run setname twice because 1st time doesn't do it
+exports.setName   = setName
+
 exports.createTag   = createTag
 exports.setVersion  = series( setPackageVersion, setPackageLockVersion )

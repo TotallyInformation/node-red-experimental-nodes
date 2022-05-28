@@ -17,10 +17,10 @@
 'use strict'
 
 /** --- Type Defs - should help with coding ---
- * @typedef {import('../../../typedefs').runtimeRED} runtimeRED
- * @typedef {import('../../../typedefs').runtimeNodeConfig} runtimeNodeConfig
- * @typedef {import('../../../typedefs').runtimeNode} runtimeNode
- * @typedef {import('../../../typedefs').thisNode} thisNode <= Change this to be specific to this node
+ * @typedef {import('../../typedefs').runtimeRED} runtimeRED
+ * @typedef {import('../../typedefs').runtimeNodeConfig} runtimeNodeConfig
+ * @typedef {import('../../typedefs').runtimeNode} runtimeNode
+ * @typedef {import('../../typedefs').thisNode} thisNode <= Change this to be specific to this node
  */
 
 //#region ----- Module level variables ---- //
