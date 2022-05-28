@@ -2,6 +2,7 @@
   "name": "@totallyinformation/node-red-experimental-nodes",
   "version": "1.0.0",
   "description": "An occasionally changing set of experiments for Node-RED",
+  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -28,7 +29,9 @@
   },
   "node-red": {
     "version": ">=2",
-    "nodes": {},
+    "nodes": {
+      "fred1": "nodes/fred1/customNode.js"
+    },
     "notyetnodes": {}
   },
   "engines": {
