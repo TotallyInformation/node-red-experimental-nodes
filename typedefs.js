@@ -82,6 +82,7 @@
   * @property {Function} context get/set context data. Also .flow and .global contexts
   * @property {Function} on Event listeners for the node instance ('input', 'close')
   * @property {Function} removeListener Event handling
+  * @property {Function} warn Send a Node-RED warning to the log, also logs to the Editor's debug panel
   * @property {Function} error Error log output, also logs to the Editor's debug panel
   * @property {Function} status Show a status message under the node in the Editor
   * @property {object=} credentials Optional secured credentials
@@ -96,6 +97,16 @@
  * @typedef {object} thisNode Local copy of the node instance config + other info
  * @property {string} name only used for labelling the node in the flow
  * @property {string} topic Optional topic
+ */
+
+/** feedmeNode - template custom node - duplicate and change for actual node definitions
+ * @typedef {object} feedmeNode Local copy of the node instance config + other info
+ * @property {string} name only used for labelling the node in the flow
+ * @property {string} topic Optional topic
+ * @property {string} url URL for the feed
+ * @property {number} interval How often to fetch the feed
+ * @property {NodeJS.Timer} interval_id How often to fetch the feed
+ * @property {object} seen How often to fetch the feed
  */
 
 module.exports = {}

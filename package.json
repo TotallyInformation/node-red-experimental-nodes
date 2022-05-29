@@ -6,6 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "dependencies": {
+    "feedparser": "^2.2.10",
+    "request": "^2.88.2"
+  },
   "devDependencies": {
     "@types/jquery": "^3.5.14",
     "execa": "^5.1.1",
@@ -30,7 +34,8 @@
   "node-red": {
     "version": ">=2",
     "nodes": {
-      "fred1": "nodes/fred1/customNode.js"
+      "fred1": "nodes/fred1/customNode.js",
+      "feedme": "nodes/feedme/customNode.js"
     },
     "notyetnodes": {}
   },
