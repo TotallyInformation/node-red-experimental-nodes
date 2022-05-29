@@ -119,6 +119,18 @@ function setName(cb) {
         .pipe(dest(nodeSrcRoot))
         // .pipe(debug({title:'setname2',minimal:false}))
 
+        src([`${nodesRoot}/*/customNode.js`],  )
+            // .pipe(debug({title:'setname',minimal:false}))
+            // Replace any instances of '¬¬¬' with actual node name (assumed to be the parent folder name)
+            .pipe( gulpReplace('¬¬¬', function replaceNodeNamePlaceholder(match, p1, offset, string) {
+                // https://github.com/gulpjs/vinyl#instance-properties
+                const nodeName = this.file.relative.split(path.sep).shift()
+                // if (match) console.log( 'gulpReplace: ', this.file.relative )
+                return nodeName
+            }) )
+            .pipe(dest(nodesRoot))
+            // .pipe(debug({title:'setname2',minimal:false}))
+
     cb()
 }
 
