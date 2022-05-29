@@ -14,6 +14,13 @@ Your nodes won't work if you don't do these.
 * The runtime js file's `RED.nodes.registerType` MUST have the same name as above.
 * The name above MUST match the name in the node-red section of the `package.json` file.
 
+#### Coding the HTML file
+
+#### Coding the runtime JavaScript file
+
+* You MUST create an on-close handler if you have created background event listeners or anything else that will otherwise continue to run in the Node.js loop even if your node is removed or redeployed. If you fail to do this, you have a memory leak which will eventually blow up on you.
+* You MUST call `done()` if your close handling is asynchronous or may take some time to complete.
+
 ### SHOULD
 
 These will make your node's easier to debug and manage.
@@ -32,3 +39,4 @@ These will make your node's easier to debug and manage.
 #### Coding the runtime JavaScript file
 
 * You SHOULD deconstruct the complex, normally interlocking functions required in your node's runtime. While this is more complex for simple nodes, it is a massive time and energy-saver as the node gets more complex. It also helps you understand how the nodes actually work and which bits get called when and why.
+* 
